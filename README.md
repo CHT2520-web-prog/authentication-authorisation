@@ -150,7 +150,7 @@ public function login(Request $request)
 ```
 
 - The first part of this method simply gets the user details from the form and puts them into an array.
-- The `Auth` facade performs authentication for us. The `attempt()` method will check these details against the _users_ table in the database. If we get a match we want to start a new session `$request->session()->regenerate();` and redirect the user to the homepage of the app.
+- The [`Auth` facade](https://laravel.com/framework/docs/authentication#authenticating-users) performs authentication for us. The `attempt()` method will check these details against the _users_ table in the database. If we get a match we want to start a new session `$request->session()->regenerate();` and redirect the user to the homepage of the app.
 - If the login attempt is unseccessfull we 'fall through' to the final line which sends the user back to the log in form.
 - Test this works, look in the _UserSeeder.php_ file for usernames and passwords to test with.
 
@@ -204,7 +204,7 @@ public function logout(Request $request)
 #### Providing a Sign In Link
 
 - Back in _layout.blade.php_ modify the navigation options to include a sign-in option that will only be displayed for users that haven't logged in.
-  - The `@guest` directive marks out code that will only be displayed for users that aren't authenticated.
+  - The [`@guest`](https://laravel.com/framework/docs/blade#authentication-directives) directive marks out code that will only be displayed for users that aren't authenticated.
 
 ```html
 <nav>
@@ -226,21 +226,27 @@ public function logout(Request $request)
 We want to prevent guest users from accessing certain pages in our site.
 
 - First, in _index.blade.php_, we'll display different content depending on whether the user is logged in.
-  - Edit this file so it looks like the following
+  - Edit this file to conditionally display the list of films. For example:
 
 ```html
 <x-layout title="List the films">
-  <h1>Here's a list of films</h1>
-  @auth @foreach ($films as $film)
-  <p>
-    <a href="/films/{{$film->id}}"> {{$film->title}} </a>
-  </p>
-  @endforeach @endauth
-  @guest
-  <p>
-    You need to be logged in to view the content of this website.
-  </p>
-  @endguest
+      @auth
+        <h1>Here's a list of films</h1>
+        @foreach ($films as $film)
+        <p>
+            <a href="/films/{{$film->id}}">
+                {{$film->title}}
+            </a>
+        </p>
+        @endforeach
+        {{ $films->links() }}
+    @endauth
+
+    @guest
+    <p>
+        You need to be logged in to view the content of this website.
+    </p> 
+    @endguest
 </x-layout>
 ```
 
@@ -249,7 +255,7 @@ We want to prevent guest users from accessing certain pages in our site.
 
 Even though we have hidden the navigation options it is still possible to access routes directly by entering a URI in the browser.
 
-Next we will stop guest users from accessing certain routes. Open _routes/web.php_ and add route middleware to prevent guest users from accessing the create, show and edit pages. You may have additional routes e.g. for certificates. You should protect these as well.
+Next we will stop guest users from accessing certain routes. Open _routes/web.php_ and add [route middleware](https://laravel.com/framework/docs/authentication#protecting-routes) to prevent guest users from accessing the create, show and edit pages. You may have additional routes e.g. for certificates. You should protect these as well.
 
 ```php
 use App\Http\Controllers\FilmController;
@@ -306,9 +312,9 @@ Schema::create('users', function (Blueprint $table) {
 ```php
 public function run(): void
 {
-    DB::table('users')->insert(['name' => 'Kate Hutton', 'email' => 'k.l.hutton@hudstudent.ac.uk', 'password' => Hash::make('password'), 'role_id' => 2]);
-    DB::table('users')->insert(['name' => 'Yousef Miandad', 'email' => 'y.miandad@hudstudent.ac.uk', 'password' => Hash::make('letmein'), 'role_id' => 2]);
-    DB::table('users')->insert(['name' => 'Sunil Laxman', 'email' => 's.laxman@hudstudent.ac.uk', 'password' => Hash::make('password2'), 'role_id' => 1]);
+    DB::table('users')->insert(['name' => 'Kate Hutton', 'email' => 'k.l.hutton@hud.ac.uk', 'password' => Hash::make('password'), 'role_id' => 2]);
+    DB::table('users')->insert(['name' => 'Yousef Miandad', 'email' => 'y.miandad@hud.ac.uk', 'password' => Hash::make('letmein'), 'role_id' => 2]);
+    DB::table('users')->insert(['name' => 'Sunil Laxman', 'email' => 's.laxman@hud.ac.uk', 'password' => Hash::make('password2'), 'role_id' => 1]);
 }
 ```
 
@@ -318,12 +324,12 @@ public function run(): void
 php artisan migrate:fresh --seed
 ```
 
-- Check Adminer/phpMyAdmin to make sure this has worked.
+- Check Adminer to make sure this has worked.
 
 ### Adding a gate
 
 - Add a gate to the `boot()` method of _app/Providers/ServiceProvider.php_.
-  - A gate is simply a function that decides if a user is allowed to perform a certain action. This gate simply checks if the user as a _role_id_ of 2.
+  - A [gate](https://laravel.com/framework/docs/authorization#gates) is simply a function that decides if a user is allowed to perform a certain action. This gate simply checks if the user as a _role_id_ of 2.
 
 ```php
 namespace App\Providers;
@@ -379,14 +385,14 @@ Route::post('/logout', [AuthController::class, 'logout']);
 ```
 
 - Test this works
-- Log into the app as s.laxman@hudstudent.ac.uk (role_id of 1) and try to add a new film. You should be denied access.
+- Log into the app as s.laxman@hud.ac.uk (role_id of 1) and try to add a new film. You should be denied access.
 
 ### Using the @can Directive in Views
 
 This works but really we want hide navigation options from users that don't have the authorisation to perform those actions.
 
 - Open _layout.blade_.
-- Modify the navigation bar to use the `@can` blade directive
+- Modify the navigation bar to use the [`@can` blade directive](https://laravel.com/framework/docs/authorization#via-blade-templates).
 
 ```html
 <nav>
@@ -407,21 +413,21 @@ This works but really we want hide navigation options from users that don't have
 
 ```html
 <x-layout title="Show the details for a film">
-  <h1>{{$film->title}}</h1>
-  <p>Year:{{$film->year}}</p>
-  <p>Duration:{{$film->duration}}</p>
+    <h1>{{$film->title}} ({{$film->certificate->name}})</h1>
+    <p>Year:{{$film->year}}</p>
+    <p>Duration:{{$film->duration}} ({{$film->getAge()}} years old)</p>
 
-  @can('edit')
-  <a href="/films/{{$film->id}}/edit">
-    <button>Edit</button>
-  </a>
+    @can('edit')
+    <a href='/films/{{$film->id}}/edit'>
+        <button>Edit</button>
+    </a>
 
-  <form method="POST" action="/films">
-    @csrf @method('DELETE')
-    <input type="hidden" name="id" value="{{$film->id}}" />
-    <button type="submit">Delete</button>
-  </form>
-  @endcan
+    <form method='POST' action='/films/{{$film->id}}'>
+        @csrf
+        @method('DELETE')
+        <button type='submit'>Delete</button>
+    </form>
+    @endcan
 </x-layout>
 ```
 
@@ -445,9 +451,7 @@ When a user isn't authorised to perform an action they receive a 403 page. It wo
 - Test this works.
 
 ## Test your Understanding
-
-When the user enters the wrong login details they are sent back to the login form. It would be good if they received a message telling them the details they entered were incorrect. Have a look at https://laravel.com/docs/12.x/session#flash-data for advice on passing a message back to the login page.
+- When the user enters the wrong login details they are sent back to the login form. It would be good if they received a message telling them the details they entered were incorrect. Have a look at https://laravel.com/docs/session#flash-data for advice on passing a message back to the login page.
 
 ## More to Investigate
-
-An alternative to using gates is using policies (https://laravel.com/docs/12.x/authorization#creating-policies), which give more control over access to actions.
+- An alternative to using gates is using policies (https://laravel.com/docs/authorization#creating-policies), which give more control over access to actions.
