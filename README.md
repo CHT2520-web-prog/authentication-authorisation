@@ -1,6 +1,6 @@
 # Authentication and Authorisation
 
-The starting point for this practical is the [**Intro to Laravel**](https://github.com/CHT2520-web-prog/intro-to-laravel) practical we did previously. You'll need to complete this first before attempting the following practical work.
+The starting point for this practical is the [**Intro to Laravel**](https://github.com/CHT2520-web-prog/laravel-start) practical we did previously. You'll need to complete this first before attempting the following practical work.
 
 ## Authentication
 
