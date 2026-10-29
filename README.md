@@ -1,8 +1,6 @@
 # Authentication and Authorisation
 
-This practical provides an overview of implementing authentication and authorisation using Laravel. As always, you should refer to the Laravel documentation (https://laravel.com/) for complete information and Laracasts (https://laracasts.com/series/30-days-to-learn-laravel-11) for additional advice.
-
-The starting point for this practical is the [**Intro to Laravel**](https://github.com/CHT2520-web-prog/intro-to-laravel) practical we did a couple of weeks ago. You'll need to complete this first before attempting the following practical work (you'd also be fine using the Eloquent Relationships example as a starting point).
+The starting point for this practical is the [**Intro to Laravel**](https://github.com/CHT2520-web-prog/intro-to-laravel) practical we did previously. You'll need to complete this first before attempting the following practical work.
 
 ## Authentication
 
@@ -35,9 +33,9 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('users')->insert(['name' => 'Kate Hutton', 'email' => 'k.l.hutton@hudstudent.ac.uk', 'password' => Hash::make('password')]);
-        DB::table('users')->insert(['name' => 'Yousef Miandad', 'email' => 'y.miandad@hudstudent.ac.uk', 'password' => Hash::make('letmein')]);
-        DB::table('users')->insert(['name' => 'Sunil Laxman', 'email' => 's.laxman@hudstudent.ac.uk', 'password' => Hash::make('password2')]);
+        DB::table('users')->insert(['name' => 'Kate Hutton', 'email' => 'k.l.hutton@hud.ac.uk', 'password' => Hash::make('password')]);
+        DB::table('users')->insert(['name' => 'Yousef Miandad', 'email' => 'y.miandad@hud.ac.uk', 'password' => Hash::make('letmein')]);
+        DB::table('users')->insert(['name' => 'Sunil Laxman', 'email' => 's.laxman@hud.ac.uk', 'password' => Hash::make('password2')]);
     }
 }
 ```
