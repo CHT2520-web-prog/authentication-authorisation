@@ -41,7 +41,7 @@ class UserSeeder extends Seeder
 ```
 
 - Most of this should be self-explanatory. The only new thing here is the use of the `Hash` class to generate a hash for each user's password.
-- Add the _UserSeeder_ to the list of seeders in _DatabaseSeeder.php_.
+- Add the _UserSeeder_ to the list of seeders in _DatabaseSeeder.php_. You may have some additional seeders if you completed the Eloquent practical work. 
 
 ```php
     public function run(): void
@@ -59,7 +59,7 @@ class UserSeeder extends Seeder
 php artisan migrate:fresh --seed
 ```
 
-- In Adminer/phpMyAdmin check you have some rows in the _users_ table and notice that the passwords have been hashed.
+- In Adminer check you have some rows in the _users_ table and notice that the passwords have been hashed.
 
 ### Implementing Authentication
 
@@ -100,18 +100,18 @@ php artisan make:controller AuthController
 - Add an `index()` method to the controller
 
 ```php
-function index()
+public function index()
 {
     return view('auth.login');
 }
 ```
 
-- In the _routes/web.php_ file add a route for the login form i.e.
+- In the _routes/web.php_ file add a route for the login form:
 
 ```php
-Route::get('/login', [AuthController::class, 'index']);
+Route::get('/login', [AuthController::class, 'index'])->name('login');
 ```
-
+- We give the route a name of 'login'. By naming the route, Laravel will automatically redirect the user to this route if they are unauthenticated (not logged in). 
 - You will also need to make sure you have imported the `AuthController` (look at the top of the file to see how we did this for the `FilmController`)
 
 - Test this works by accessing the login route in a browser. You should see the login form.
@@ -134,7 +134,7 @@ use Illuminate\Support\Facades\Auth;
 - Then add a `login()` method to handle the _login_ route
 
 ```php
-function login(Request $request)
+public function login(Request $request)
 {
     $userDetails = [
         "email" => $request->email,
@@ -156,7 +156,7 @@ function login(Request $request)
 
 #### Giving the User Some Feedback
 
-- Even though this works, it isn't clear to the user that they have successfully signed in
+- Even though this works, it isn't clear to the user that they have successfully signed in. We'll add some feedback in the layout file. 
 - Open _resources/views/components/layout.blade.php_
 - Add the following code immediately after the opening `<body>` tag and before the `<nav>`
 
@@ -189,7 +189,7 @@ Route::post('/logout', [AuthController::class, 'logout']);
 - Add a `logout()` method to the `AuthController`.
 
 ```php
-function logout(Request $request)
+public function logout(Request $request)
 {
     Auth::logout();
     $request->session()->invalidate();
@@ -235,11 +235,13 @@ We want to prevent guest users from accessing certain pages in our site.
   <p>
     <a href="/films/{{$film->id}}"> {{$film->title}} </a>
   </p>
-  @endforeach @endauth @guest
+  @endforeach @endauth
+  @guest
   <p>
-    You need to be logged in to view the content of this website. @endguest
-  </p></x-layout
->
+    You need to be logged in to view the content of this website.
+  </p>
+  @endguest
+</x-layout>
 ```
 
 - This should make sense, it simply uses the `@auth` and `@guest` directives to display different content for different users.
@@ -247,24 +249,30 @@ We want to prevent guest users from accessing certain pages in our site.
 
 Even though we have hidden the navigation options it is still possible to access routes directly by entering a URI in the browser.
 
-Next we will stop guest users from accessing certain routes. Open _routes/web.php_ and add route middleware to prevent guest users from accessing the create, show and edit pages. You may have additional routes e.g. for update and delete. You should protect these as well.
+Next we will stop guest users from accessing certain routes. Open _routes/web.php_ and add route middleware to prevent guest users from accessing the create, show and edit pages. You may have additional routes e.g. for certificates. You should protect these as well.
 
 ```php
 use App\Http\Controllers\FilmController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/login', [AuthController::class, 'index']);
+Route::get('/login', [AuthController::class, 'index'])->name('login');
+Route::post('/logout', [AuthController::class, 'logout']);
+
+Route::get('/', [FilmController::class, 'index']);
 Route::get('/films', [FilmController::class, 'index']);
-Route::get('/films/about', [FilmController::class, 'about']);
 Route::get('/films/create', [FilmController::class, 'create'])->middleware('auth');
 Route::post('/films', [FilmController::class, 'store'])->middleware('auth');
 Route::get('/films/{id}', [FilmController::class, 'show'])->middleware('auth');
 Route::get('/films/{id}/edit', [FilmController::class, 'edit'])->middleware('auth');
+Route::patch('/films/{id}', [FilmController::class, 'update'])->middleware('auth');
+Route::delete('/films/{id}', [FilmController::class, 'destroy'])->middleware('auth');
 
 
-Route::get('/login', [AuthController::class, 'index'])->name("login");
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout']);
+Route::get('/about', function () {
+    return view('pages.about');;
+});
 ```
 
 - Make sure you are logged out and try and access the _create_ route, you should find you get redirected to the login page.
@@ -423,23 +431,15 @@ This works but really we want hide navigation options from users that don't have
 
 When a user isn't authorised to perform an action they receive a 403 page. It would be nice if this page was styled to fit with the rest of the application
 
-- Create a new folder called 'errors' in the _resources/views_ folder.
+- Create a new folder called 'errors' in the _resources/views_ folder (you may already have one).
 - Create a new _403.blade.php_ file in this folder.
 - Add the following code in this page.
 
 ```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>403</title>
-    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
-    <link href="{{asset('css/style.css')}}" type="text/css" rel="stylesheet" />
-  </head>
-  <body>
+<x-layout title="You are not authorised to view this page">
     <h1>403</h1>
     <p>You are not authorised to view this page</p>
-  </body>
-</html>
+</x-layout>
 ```
 
 - Test this works.
