@@ -328,7 +328,7 @@ php artisan migrate:fresh --seed
 
 ### Adding a gate
 
-- Add a gate to the `boot()` method of _app/Providers/ServiceProvider.php_.
+- Add a gate to the `boot()` method of _app/Providers/AppServiceProvider.php_.
   - A [gate](https://laravel.com/framework/docs/authorization#gates) is simply a function that decides if a user is allowed to perform a certain action. This gate simply checks if the user as a _role_id_ of 2.
 
 ```php
