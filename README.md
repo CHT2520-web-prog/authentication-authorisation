@@ -239,7 +239,6 @@ We want to prevent guest users from accessing certain pages in our site.
             </a>
         </p>
         @endforeach
-        {{ $films->links() }}
     @endauth
 
     @guest
